@@ -6,7 +6,7 @@ const pc = new Pinecone();
 export async function POST(req: NextRequest) {
   const { ids } = await req.json();
   
-  const index = pc.index('enron');
+  const index = pc.index('scotus');
   const results = await index.fetch(ids);
 
   return NextResponse.json({ results });

@@ -4,3 +4,4 @@ enron-explorer/.env
 enron-explorer/node_modules
 .venv/
 emails.csv
+*.json
