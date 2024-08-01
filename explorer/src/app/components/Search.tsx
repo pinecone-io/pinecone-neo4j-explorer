@@ -19,12 +19,32 @@ const fetchSearchData = async (query: string) => {
   return response.json();
 };
 
+const fetchGetOpinion = async (id: string) => {
+  const response = await fetch(`/api/opinion`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ "caseId":id }),
+  });
+  return response.json();
+};
 
-const Search = ({ onSearchSelect, selectedLink, hoveredLink }: { 
-  onSearchSelect: (selectedEmailAddresses: string[] | undefined, selectedTransactions: string[] | undefined) => void, 
-  selectedLink: string |  null, hoveredLink: string | null}) => 
+
+const Search = ({ 
+  onSearchSelect, 
+  selectedLink, 
+  hoveredLink, 
+  hoveredNode, 
+  onSummaryUpdated 
+}: { 
+  onSearchSelect: (selectedCaseIds: string[] | undefined) => void, 
+  selectedLink: string |  null, hoveredLink: string | null, hoveredNode: string | null, 
+  onSummaryUpdated: (summary: string | null) => void,
+}) => 
   {
   const [query, setQuery] = useState<string | undefined>('');
+  const [opinion, setOpinion] = useState<string | undefined>('');
   const queryClient = useQueryClient();
   const { data, error, refetch, isLoading, isFetched, isSuccess } = useQuery({
     queryKey: ['searchData', query],
@@ -46,6 +66,21 @@ const Search = ({ onSearchSelect, selectedLink, hoveredLink }: {
     }
   }, [selectedLink, handleSearch]);
 
+  useEffect(() => {
+    
+      const getOpinion = async () => {
+        if (hoveredNode) {
+          const response = await fetchGetOpinion(hoveredNode);
+          // console.log(response)
+          setOpinion(response.content)
+        }
+      }
+      
+    if (hoveredNode) {
+      getOpinion()
+    }
+  }, [hoveredNode, handleSearch]);
+
   // useEffect(() => {
   //   if (query) {
   //     handleSearch();
@@ -55,13 +90,14 @@ const Search = ({ onSearchSelect, selectedLink, hoveredLink }: {
   useEffect(() => {
     if (isSuccess && data) {
       console.log("DATA", data);
-      onSearchSelect(data.uniqueEmailTo, data.matches.map((match: ScoredPineconeRecord<MatchMetadata>) => match.metadata?.transaction_id));
+      onSearchSelect(data.caseIds);
+      onSummaryUpdated(data.summary);
     }
-  }, [isSuccess, data, onSearchSelect]);
+  }, [isSuccess, data, onSearchSelect, onSummaryUpdated]);
 
   return (
     <div className="mb-10">
-      <div>
+      <div className="m-10">
         <input
           type="text"
           value={query}
@@ -75,20 +111,20 @@ const Search = ({ onSearchSelect, selectedLink, hoveredLink }: {
       </div>
       {error && <div className="text-black">An error occurred: {error.message}</div>}
       {data && (
-        <div className="mt-2 h-full grid grid-rows-5 gap-2" style={{ height: 'calc(100vh - 200px)' }}>
-          <ul className="text-black overflow-y-auto row-span-1">
+        <div className="mt-2 h-full grid grid-rows-3 gap-2 rounded-lg" style={{ height: 'calc(100vh - 200px)' }}>
+          {/* <ul className="text-black overflow-y-auto row-span-1">
             {data.uniqueEmailTo.map((emailTo: string, index: number) => (
               <li className="bg-white cursor-pointer m-1 p-1 text-black" key={index} onClick={() => {
                 // console.log(emailTo)
                 onSearchSelect([emailTo], undefined)
               }}>{emailTo}</li>
             ))}
-          </ul>
-          <div className="bg-white text-black p-1 overflow-y-auto row-span-2">
+          </ul> */}
+          <div className="bg-white text-black p-1 overflow-y-auto row-span-2 rounded-lg">
             <Markdown>{data.summary}</Markdown>
           </div>
-          <div className="bg-white text-black p-1 overflow-y-auto row-span-2">
-            <Markdown>{hoveredLink}</Markdown>
+          <div className="bg-white text-black p-1 overflow-y-auto row-span-2 rounded-lg">
+            <Markdown>{opinion}</Markdown>
           </div>
         </div>
       )}

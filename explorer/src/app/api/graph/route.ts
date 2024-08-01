@@ -9,6 +9,8 @@ if (!NEO4J_URI || !NEO4J_USERNAME || !NEO4J_PASSWORD) {
 
 export async function POST(req: NextRequest) {
   const { selectedNodes } = await req.json();
+  console.log("NEO4J_URI", NEO4J_URI)
+  const uniqueSelectNodes = Array.from(new Set(selectedNodes));
   const driver = neo4j.driver(
     NEO4J_URI!,
     neo4j.auth.basic(NEO4J_USERNAME!, NEO4J_PASSWORD!)
@@ -18,77 +20,83 @@ export async function POST(req: NextRequest) {
   try {
     // First query to get nodes and direct relationships
     const result = await session.run(`
-      MATCH (from:EmailAddress)-[fromRelationship:EMAIL_FROM]->(email:Email)-[toRelationship:EMAIL_TO]->(to:EmailAddress)
-      WHERE from.address IN $selectedNodes OR to.address IN $selectedNodes
-      OPTIONAL MATCH (from)<-[fromIn:EMAIL_TO|EMAIL_FROM]-()
-      OPTIONAL MATCH (to)<-[toIn:EMAIL_TO|EMAIL_FROM]-()
+      MATCH (case:Case)-[r]->(connectedNode)
+      WHERE case.id IN $selectedNodes
       RETURN DISTINCT 
-        id(from) AS sourceId, 
-        from, 
-        id(email) AS emailId, 
-        email, 
-        id(to) AS targetId, 
-        to, 
-        fromRelationship, 
-        toRelationship,
-        COUNT(fromIn) AS fromInEdgesCount,
-        COUNT(toIn) AS toInEdgesCount
-      LIMIT 1000
-    `, { selectedNodes });
+        id(case) AS caseNodeId, 
+        case, 
+        id(connectedNode) AS connectedNodeId, 
+        connectedNode, 
+        r,
+        case.id AS caseId,
+        connectedNode.id AS connectedNodePropertyId
+      LIMIT 400
+    `, { selectedNodes: uniqueSelectNodes });
+
 
     const nodes: any[] = [];
     const links: any[] = [];
-
+    console.log(`
+      MATCH (case:Case)-[r]->(connectedNode)
+      WHERE case.id IN $selectedNodes
+      RETURN DISTINCT 
+        id(case) AS caseId, 
+        case, 
+        id(connectedNode) AS connectedNodeId, 
+        connectedNode, 
+        r
+      LIMIT 1000
+    `, { selectedNodes: uniqueSelectNodes })
+    // console.log(result)
     // Collect all inEdgesCount values
-    const fromInEdgesCounts = result.records.map(record => Number(record.get('fromInEdgesCount')));
-    const toInEdgesCounts = result.records.map(record => Number(record.get('toInEdgesCount')));
+    // const fromInEdgesCounts = result.records.map(record => Number(record.get('fromInEdgesCount')));
+    // const toInEdgesCounts = result.records.map(record => Number(record.get('toInEdgesCount')));
 
-    // Find the min and max values for normalization
-    const allEdgesCounts = [...fromInEdgesCounts, ...toInEdgesCounts];
-    const minEdgesCount = Math.min(...allEdgesCounts);
-    const maxEdgesCount = Math.max(...allEdgesCounts);
+    // // Find the min and max values for normalization
+    // const allEdgesCounts = [...fromInEdgesCounts, ...toInEdgesCounts];
+    // const minEdgesCount = Math.min(...allEdgesCounts);
+    // const maxEdgesCount = Math.max(...allEdgesCounts);
 
-    // Normalize the values to fall between 0-100
-    const normalize = (value: number) => {
-      return ((value - minEdgesCount) / (maxEdgesCount - minEdgesCount)) * 100;
-    };
+    // // Normalize the values to fall between 0-100
+    // const normalize = (value: number) => {
+    //   return ((value - minEdgesCount) / (maxEdgesCount - minEdgesCount)) * 100;
+    // };
 
     // Process first query results
-    result.records.forEach(record => {
-      const sourceNode = record.get('from');
-      const targetNode = record.get('to');
-      const emailNode = record.get('email');
-      const fromRelationship = record.get('fromRelationship');
-      const toRelationship = record.get('toRelationship');
-      const sourceId = record.get('sourceId').toString();
-      const targetId = record.get('targetId').toString();
-      const fromInEdgesCount = record.get('fromInEdgesCount');
-      const toInEdgesCount = record.get('toInEdgesCount');
+    result.records.forEach(record => {      
+      const caseNode = record.get('case');
+      const connectedNode = record.get('connectedNode');
+      const caseNodeId = record.get('caseNodeId').toString();
+      const caseId = record.get('caseId').toString();
+      const connectedNodeId = record.get('connectedNodeId').toString();
+      const relationship = record.get('r');
 
-      if (sourceNode) {
-        nodes.push({
-          id: sourceId,
-          ...sourceNode.properties,
-          inEdgesCount: normalize(fromInEdgesCount)
+      console.log("relationship", relationship)
+
+      if (caseNode) {
+        nodes.push({      
+          label: 'Case', 
+          caseId,   
+          ...caseNode.properties,
+          id: caseNode.identity.toString(),
         });
       }
 
-      if (targetNode) {
+      if (connectedNode) {
         nodes.push({
-          id: targetId,
-          ...targetNode.properties,
-          inEdgesCount: normalize(toInEdgesCount)
+          // id: connectedNodeId,
+          label: connectedNode.labels[0],
+          ...connectedNode.properties,
+          id: connectedNode.identity.toString(),
         });
       }
 
-      if (fromRelationship && fromRelationship.properties && toRelationship && toRelationship.properties) {
+      if (relationship && relationship.properties) {
         links.push({
-          source: sourceId,
-          target: targetId,
-          ...fromRelationship.properties,
-          ...toRelationship.properties,
-          ...emailNode.properties,
-          transaction_id: emailNode.properties.id
+          label: relationship.type,
+          source: caseNodeId,
+          target: connectedNodeId,
+          ...relationship.properties
         });
       }
     });
@@ -98,8 +106,8 @@ export async function POST(req: NextRequest) {
       .map(id => nodes.find(node => node.id === id));
 
     // Ensure the transaction_id is unique
-    const uniqueLinks = Array.from(new Set(links.map(link => link.id)))
-      .map(id => links.find(link => link.id === id));
+    const uniqueLinks = Array.from(new Set(links.map(link => link.source + link.target)))
+      .map(id => links.find(link => link.source + link.target === id));
 
     // Remove unconnected nodes
     const connectedNodeIds = new Set(uniqueLinks.flatMap(link => [link.source, link.target]));
@@ -110,7 +118,7 @@ export async function POST(req: NextRequest) {
       links: uniqueLinks
     };
 
-    console.log("RECORDS", records)
+    // console.log(nodes.length, uniqueNodes.length)
 
     return NextResponse.json({ data: records });
   } catch (error) {

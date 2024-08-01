@@ -1,12 +1,7 @@
 import OpenAI from 'openai'
 import {
   encode,
-  encodeChat,
-  decode,
-  isWithinTokenLimit,
-  encodeGenerator,
-  decodeGenerator,
-  decodeAsyncGenerator,
+  decode,  
 } from 'gpt-tokenizer'
 
 const openai = new OpenAI({
@@ -14,7 +9,6 @@ const openai = new OpenAI({
 });
 
 const MAX_TOKENS = 128000
-
 
 const recursiveSummary = async (text: string) => {  
   
@@ -47,7 +41,7 @@ const summarize = async (text: string) => {
   const summary = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
-      { role: "system", content: `Summarize the following emails:\n\n${text}. Summarize all the emails and combine them together, and indicate what the common theme across all of them is. Do not under any circumstances just quote the emails in full. Always summarize the whole set of emails. Start by mentioning the number of emails processed.`,}
+      { role: "system", content: `Summarize the following Supreme Court opinions:\n\n${text}. Indicate the number of opinions processed. Find the most common themes across all of them.`,}
     ]    
   });
 
@@ -55,9 +49,27 @@ const summarize = async (text: string) => {
 }
 
 
-const summarizeEmails = async (emails: string[]) => {
-  const fullText = emails.join('\n\n');  
-  return await recursiveSummary(fullText);
+const answer = async (text: string, query: string) => {
+  const summary = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      { role: "system", content: `Related the following text:\n\n${text} \n\nto this query ${query}.`,}
+    ]    
+  });
+
+  return summary.choices[0].message.content;
 }
 
-export { summarizeEmails }
+
+const summarizeOpinions = async (opinions: string[], query: string) => {
+  const fullText = opinions.join('\n\n');  
+  const summary = await recursiveSummary(fullText);
+  if (!summary) {
+    return { summary: '' }
+  }
+  const finalAnswer = await answer(summary, query);
+  console.log("finalAnswer", finalAnswer)
+  return finalAnswer
+}
+
+export { summarizeOpinions }
