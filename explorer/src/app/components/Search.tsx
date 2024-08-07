@@ -1,12 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown'
-import { Input, Button, Spinner, Card, Typography } from "@material-tailwind/react";
+import { Card, Typography } from "@material-tailwind/react";
 import { useAppContext } from '../AppContext';
 import { isEqual } from 'lodash';
-
-
-
 
 const fetchGetOpinion = async (id: string) => {
   const response = await fetch(`/api/opinion`, {
@@ -19,12 +15,11 @@ const fetchGetOpinion = async (id: string) => {
   return response.json();
 };
 
-
 const Search = () => {
   const {
     setSelectedData,
-    hoveredNode,
     setSummary,
+    hoveredNode,    
     summary,
     isFlipped
   } = useAppContext();
@@ -35,12 +30,10 @@ const Search = () => {
 
   const { queryResult } = useAppContext();
 
-  useEffect(() => {
-    
+  useEffect(() => {    
       const getOpinion = async () => {
         if (hoveredNode) {
           const response = await fetchGetOpinion(hoveredNode);
-          // console.log(response)
           setOpinion(response.content)
         }
       }
@@ -64,7 +57,7 @@ const Search = () => {
     <div className="flex flex-col overflow-hidden">
       
       {/* {error && <Typography color="red" className="mt-2">{error.message}</Typography>} */}
-      {queryResult && (
+      {queryResult && summary && (
         <div className="mt-2 flex-1 overflow-hidden">
           <div className="h-[90vh] overflow-y-auto">
             <Card className="p-4 mb-2">

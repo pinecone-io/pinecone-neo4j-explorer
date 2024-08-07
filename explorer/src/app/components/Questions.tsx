@@ -21,7 +21,8 @@ const Questions = ()  => {
             key={entry.question} 
             className="cursor-pointer mb-2 transition-all duration-300 ease-in-out shadow-sm hover:shadow-md bg-white rounded-lg p-3"
           >
-            <span className="mb-2">{entry.question}</span>
+            <div className="mb-2">{entry.question}</div>
+            <div className="mb-2 text-[10px] text-gray-400">{entry.cypher}</div>
           </div>
         ))}
       </div>

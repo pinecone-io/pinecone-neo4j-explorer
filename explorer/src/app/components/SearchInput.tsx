@@ -38,6 +38,7 @@ export const SearchInput = () => {
     setInferredData(null);
     setSummary(null);
     setGraphData(null);
+    
     await queryClient.cancelQueries({ queryKey: ['searchData', query]});
     await queryClient.invalidateQueries({ queryKey: ['searchData', query]});
     await refetch();

@@ -38,10 +38,14 @@ const recursiveSummary = async (text: string) => {
 }
 
 const summarize = async (text: string) => {
+  const prompt = `Summarize the following Supreme Court opinions:\n\n${text}. 
+  Indicate the number of opinions processed. Find the most common themes across all of them.
+  Whenever mentioning a case, clearly indicate the case name and docket number.
+  `
   const summary = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
-      { role: "system", content: `Summarize the following Supreme Court opinions:\n\n${text}. Indicate the number of opinions processed. Find the most common themes across all of them.`,}
+      { role: "system", content: prompt,}
     ]    
   });
 

@@ -41,7 +41,7 @@ export async function infer(input: any) {
     (async () => {
       const { partialObjectStream } = await streamObject({
         model: llm,
-        prompt: cypherQuestionsPromptBuilder(nodes, edges, summary),
+        prompt:await cypherQuestionsPromptBuilder(nodes, edges, summary),
         schema: cypherQuestionsSchema,
       });
 

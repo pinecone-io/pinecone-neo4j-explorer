@@ -9,7 +9,7 @@ if (!NEO4J_URI || !NEO4J_USERNAME || !NEO4J_PASSWORD) {
 
 export async function POST(req: NextRequest) {
   const { selectedNodes } = await req.json();
-  console.log("NEO4J_URI", NEO4J_URI)
+  // console.log("NEO4J_URI", NEO4J_URI)
   const uniqueSelectNodes = Array.from(new Set(selectedNodes));
   const driver = neo4j.driver(
     NEO4J_URI!,
@@ -36,17 +36,17 @@ export async function POST(req: NextRequest) {
 
     const nodes: any[] = [];
     const links: any[] = [];
-    console.log(`
-      MATCH (case:Case)-[r]->(connectedNode)
-      WHERE case.id IN $selectedNodes
-      RETURN DISTINCT 
-        id(case) AS caseId, 
-        case, 
-        id(connectedNode) AS connectedNodeId, 
-        connectedNode, 
-        r
-      LIMIT 1000
-    `, { selectedNodes: uniqueSelectNodes })
+    // console.log(`
+    //   MATCH (case:Case)-[r]->(connectedNode)
+    //   WHERE case.id IN $selectedNodes
+    //   RETURN DISTINCT 
+    //     id(case) AS caseId, 
+    //     case, 
+    //     id(connectedNode) AS connectedNodeId, 
+    //     connectedNode, 
+    //     r
+    //   LIMIT 1000
+    // `, { selectedNodes: uniqueSelectNodes })
     // console.log(result)
     // Collect all inEdgesCount values
     // const fromInEdgesCounts = result.records.map(record => Number(record.get('fromInEdgesCount')));
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       const connectedNodeId = record.get('connectedNodeId').toString();
       const relationship = record.get('r');
 
-      console.log("relationship", relationship)
+      // console.log("relationship", relationship)
 
       if (caseNode) {
         nodes.push({      
