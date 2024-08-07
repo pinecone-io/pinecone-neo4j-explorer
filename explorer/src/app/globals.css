@@ -18,12 +18,8 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: "white";
+  font-family: 'Roboto', sans-serif !important;
 }
 
 @layer utilities {
@@ -35,14 +31,12 @@ body {
 .flip-card {
   background-color: transparent;
   width: 100%;
-  /* height: 300px; */
   perspective: 1000px;
 }
 
 .flip-card-inner {
   position: relative;
   width: 100%;
-  /* height: 100%; */
   text-align: center;
   transition: transform 0.6s;
   transform-style: preserve-3d;
@@ -55,7 +49,6 @@ body {
 .flip-card-front, .flip-card-back {
   position: absolute;
   width: 100%;
-  /* height: 100%; */
   backface-visibility: hidden;
   overflow-x: scroll;
 }

@@ -20,13 +20,6 @@ const fetchGraphData = async (selectedNodes: string[]) => {
   return response.json();
 };
 
-const fetchInferredData = async (nodes: any, edges: any) => {
-  const response = await fetch('/api/infer', {
-    method: 'POST',
-    body: JSON.stringify({ nodes, edges }),
-  });
-  return response.json();
-}
 const Graph = () => {
   const {
     selectedData,
@@ -34,7 +27,9 @@ const Graph = () => {
     setHoveredLink,
     setHoveredNode,
     summary,    
-    setInferredData
+    setInferredData,
+    setGraphData,
+    graphData
   } = useAppContext();
 
   const [localSelectedNodes, setLocalSelectedNodes] = useState<string[] | null | undefined>(null);
@@ -45,12 +40,11 @@ const Graph = () => {
     enabled: false,
   });
 
-  const [graph, setGraph] = useState<any>(null);
-
   useEffect(() => {
-    console.log(data)
     const getInferredData = async () => {
-      const result = await infer({nodes: data.data.nodes, edges: data.data.links, summary})
+      setInferredData(null)
+      console.log(`infer ${summary}`)
+      const result = await infer({nodes: graphData.data.nodes, edges: graphData.data.links, summary})
       const object = result?.object;
       
 
@@ -62,10 +56,14 @@ const Graph = () => {
         }
       }        
     }
-    if (data) {
+    if (graphData) {
       getInferredData()
     }
-  }, [data, summary, setInferredData]);
+  }, [graphData, summary, setInferredData]);
+
+  useEffect(() => {
+    setGraphData(data)
+  }, [data, setGraphData])
 
   useEffect(() => {
     if (selectedData.nodes) {
@@ -130,7 +128,7 @@ const Graph = () => {
       <ForceGraph2D 
 
         ref={fgRef}
-        // width={600}
+        width={900}
         height={1000}
         onEngineStop={() => (fgRef.current as any)?.zoomToFit(600)}
         onDagError={(e) => console.error(e)}
@@ -253,14 +251,14 @@ const Graph = () => {
             // Example color mapping function
             const colors = {
               'Case': '#FF5733', // Red
-              'Justice': '#33FF57', // Green
-              'Advocate': '#3357FF', // Blue
-              'ORG': '#FF33A1', // Pink
-              'PER': '#33FFA1', // Light Green
-              'MISC': '#A133FF', // Purple
-              'Opinion': '#FFA133', // Orange
-              'LOC': '#33A1FF', // Light Blue
-              'Party': '#A1FF33', // Lime Green
+              'Justice': 'rgba(51, 255, 87, 0.5)', // Green
+              'Advocate': 'rgba(51, 87, 255, 0.5)', // Blue
+              'ORG': 'rgba(255, 51, 161, 0.5)', // Pink
+              'PER': 'rgba(51, 255, 161, 0.5)', // Light Green
+              'MISC': 'rgba(161, 51, 255, 0.5)', // Purple
+              'Opinion': 'rgba(255, 161, 51, 0.5)', // Orange
+              'LOC': 'rgba(51, 161, 255, 0.5)', // Light Blue
+              'Party': 'rgba(161, 255, 51, 0.5)', // Lime Green
               } as { [key: string]: string };
             return colors[label] || '#000000'; // Default to black if label not found
           };

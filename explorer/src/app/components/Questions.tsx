@@ -14,7 +14,7 @@ const Questions = ()  => {
   
   return (<div style={{zIndex: 1000}} className="mb-3">
     {inferredData && inferredData.entries && inferredData.entries.length > 0 && (
-      <div className="box-border flex relative flex-col grow shrink-0 rounded-lg overflow-y-scroll text-black mr-2 mt-1">
+      <div className="rounded-lg overflow-y-scroll text-black mr-2 mt-2">
         {inferredData.entries.map((entry: any) => (
           <div 
             onClick={() => handleCypherSelected(entry.cypher)} 

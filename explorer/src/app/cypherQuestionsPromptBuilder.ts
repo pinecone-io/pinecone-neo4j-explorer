@@ -12,10 +12,14 @@ const openai = new OpenAI({
 const cypherQuestionsPromptBuilder = (nodes: any, edges: any, summary: string) => {
   const prompt = `
     Given the following schema and subgraph as well as a summary of content, generate a set of non-trivial questions that can be answered by a Cypher query. 
-    The queries created should relate directly to the provided nodes and edges, and assume they will be used in the query.
-    Allow queries that may explore nodes and edges that don't appear in the current graph, but follow the same schema. 
-    Ensure that at least one node from the original graph is included in each question.
-    Prioritize NON TRIVIAL queries over ones that are obvious.
+    Follow the following guidelines:
+    - The queries created should relate directly to the provided nodes and edges, and assume they will be used in the query.
+    - Allow queries that may explore nodes and edges that don't appear in the current graph, but follow the same schema. 
+    - Ensure that at least one node from the original graph is included in each question.
+    - Prioritize NON TRIVIAL queries over ones that are obvious.
+    - The questions should relate to the summary of the content.
+    - The questions should correlate to cypher queries that would presumably resolve in some sort of result.
+    
     Then, generate the corresponding Cypher query for each question.
     Graph Schema:
       {'nodes': ['Case', 'Party', 'Justice', 'Advocate', 'Opinion', 'ORG', 'LOC', 'PER', 'MISC'], 'edges': ['case_opinion', 'alternate_name', 'mentioned_in', 'Petitioner', 'Respondent', 'advocated_by', 'decided_by', 'won_by', 'majority', 'minority', 'based_in', 'none', 'lived_in', 'religion', 'employee_of', 'works_for', 'parent_of', 'child_of', 'has_shareholder', 'owns', 'sibling_of', 'related_to', 'Appellant', 'Appellee', 'charges', 'origin', 'born_in', 'school_attended', 'has_title', 'part_of', 'website']}
@@ -24,6 +28,8 @@ const cypherQuestionsPromptBuilder = (nodes: any, edges: any, summary: string) =
       Edges: ${JSON.stringify(edges)}
     Summary:
       ${summary}       
+
+    Use chain of thought reasoning to generate the questions and Cypher queries.
   `
 
   return prompt

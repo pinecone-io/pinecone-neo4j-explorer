@@ -17,6 +17,16 @@ interface AppContextType {
   setCypherQueryResult: (data: any) => void;
   isFlipped: boolean;
   setIsFlipped: (isFlipped: boolean) => void;
+  query: string;
+  setQuery: (query: string) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
+  isSuccess: boolean;
+  setIsSuccess: (isSuccess: boolean) => void;
+  queryResult: any;
+  setQueryResult: (data: any) => void;
+  graphData: any;
+  setGraphData: (data: any) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -30,7 +40,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [inferredData, setInferredData] = useState<any>(null);
   const [cypherQueryResult, setCypherQueryResult] = useState<any>(null);
   const [isFlipped, setIsFlipped] = useState(false);
-
+  const [query, setQuery] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [queryResult, setQueryResult] = useState<any>(null);
+  const [graphData, setGraphData] = useState<any>(null);
 
   return (
     <AppContext.Provider value={{
@@ -49,7 +63,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       cypherQueryResult,
       setCypherQueryResult,
       isFlipped,
-      setIsFlipped
+      setIsFlipped,
+      query,
+      setQuery,
+      isLoading,
+      setIsLoading,
+      isSuccess,
+      setIsSuccess,
+      queryResult,
+      setQueryResult,
+      graphData,
+      setGraphData
     }}>
       {children}
     </AppContext.Provider>
