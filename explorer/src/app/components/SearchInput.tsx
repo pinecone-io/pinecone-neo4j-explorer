@@ -20,7 +20,7 @@ const fetchSearchData = async (query: string) => {
 export const SearchInput = () => {
   const queryClient = useQueryClient();
 
-  const { setQueryResult, setInferredData, setSummary, setGraphData } = useAppContext()
+  const { setQueryResult, setInferredData, setSummary, setGraphData, setCypherQueryResult } = useAppContext()
   const [query, setQuery] = useState('')
 
   const { data, error, refetch, isLoading, isFetched, isSuccess } = useQuery({
@@ -38,11 +38,11 @@ export const SearchInput = () => {
     setInferredData(null);
     setSummary(null);
     setGraphData(null);
-    
+    setCypherQueryResult(null);
     await queryClient.cancelQueries({ queryKey: ['searchData', query]});
     await queryClient.invalidateQueries({ queryKey: ['searchData', query]});
     await refetch();
-  }, [query, refetch, queryClient, setInferredData, setSummary, setGraphData]);
+  }, [query, refetch, queryClient, setInferredData, setSummary, setGraphData, setCypherQueryResult]);
 
 
   

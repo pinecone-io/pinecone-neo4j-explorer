@@ -10,7 +10,7 @@ const openai = new OpenAI({
 
 const MAX_TOKENS = 128000
 
-const recursiveSummary = async (text: string) => {  
+const recursiveSummary = async (text: string, question: string) => {  
   
   const encoded = encode(text);
   const numTokens = encoded.length;
@@ -18,7 +18,7 @@ const recursiveSummary = async (text: string) => {
   console.log(numTokens)
 
   if (numTokens < MAX_TOKENS) {
-    return summarize(text); 
+    return summarize(text, question); 
   }
 
   const numChunks = Math.ceil(numTokens / MAX_TOKENS);
@@ -30,17 +30,23 @@ const recursiveSummary = async (text: string) => {
     return decode(encoded.slice(start, end));
   });
 
-  const summaries = await Promise.all(chunks.map(chunk => summarize(chunk)));
+  const summaries = await Promise.all(chunks.map(chunk => summarize(chunk, question)));
 
-  const finalSummary = await summarize(summaries.join('\n\n'));
+  const finalSummary = await summarize(summaries.join('\n\n'), question);
   return finalSummary;
 
 }
 
-const summarize = async (text: string) => {
-  const prompt = `Summarize the following Supreme Court opinions:\n\n${text}. 
-  Indicate the number of opinions processed. Find the most common themes across all of them.
-  Whenever mentioning a case, clearly indicate the case name and docket number.
+const summarize = async (text: string, question: string) => {
+  const prompt = `Analyze the following Supreme Court opinions (marked with <opinion> tags).
+  Follow these guidelines:
+  - The analysis should answer the question: ${question}.
+  - Find the most common themes across all opinions.
+  - For each opinion, specify: Case Name, Summary, Relevance to Question.
+
+  <opinions>
+  ${text}
+  </opinions>
   `
   const summary = await openai.chat.completions.create({
     model: 'gpt-4o',
@@ -67,13 +73,13 @@ const answer = async (text: string, query: string) => {
 
 const summarizeOpinions = async (opinions: string[], query: string) => {
   const fullText = opinions.join('\n\n');  
-  const summary = await recursiveSummary(fullText);
-  if (!summary) {
-    return { summary: '' }
-  }
-  const finalAnswer = await answer(summary, query);
-  console.log("finalAnswer", finalAnswer)
-  return finalAnswer
+  const summary = await recursiveSummary(fullText, query);
+  // if (!summary) {
+  //   return { summary: '' }
+  // }
+  // const finalAnswer = await answer(summary, query);
+  // console.log("finalAnswer", finalAnswer)
+  return summary
 }
 
 export { summarizeOpinions }

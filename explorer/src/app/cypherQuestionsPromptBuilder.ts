@@ -52,18 +52,6 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
     - Use the subgraph and graph statistics to guide the creation of the Cypher queries.
     - Consider the node and edge counts, most connected nodes, and common relationship patterns when formulating queries.
     - IMPORTANT: Do NOT include the MISC node type in your queries. You must adhere to this instruction. Not doing so will result in a score of 0 for the question.
-    
-    IMPORTANT: For EACH question, provide TWO versions of the Cypher query:
-    1. A standard query without fuzzy matching
-    2. A query using fuzzy matching for text properties
-
-    When using fuzzy matching, follow these guidelines:
-    - Use the apoc.text.fuzzyMatch() function for text properties like names, titles, or descriptions.
-    - Set an appropriate similarity threshold (between 0 and 1) based on how strict the matching should be.
-    - Example of fuzzy matching in a query:
-      MATCH (n:Node)
-      WHERE apoc.text.fuzzyMatch(n.name, $searchTerm) > 0.7
-      RETURN n
 
     In this example, 'name' is the property being searched, $searchTerm is the search term, and 0.7 is the similarity threshold (0 to 1, where 1 is an exact match).
   
@@ -96,7 +84,12 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
       Most Connected Nodes: ${JSON.stringify(graphStats.mostConnectedNodes)}
       Common Node Properties: ${JSON.stringify(graphStats.commonNodeProperties)}
       Common Relationship Patterns: ${JSON.stringify(graphStats.relationshipPatterns)}
-      
+    
+    IMPORTANT: Adhere strictly to the following graph structure when creating queries:
+
+    ${graphStats.graphStructure}
+
+    Before generating each query, verify that all relationships used in the query exist in this list. Do not create queries with relationships or paths that are not explicitly defined here.  
 
     Use this information to guide your generation of questions and Cypher queries.         
   
@@ -108,3 +101,27 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
 }
 
 export { cypherQuestionsPromptBuilder }
+
+
+// Graph Schema:
+//       {'nodes': ['Case', 'Party', 'Justice', 'Advocate', 'ORG', 'LOC', 'PER', 'MISC'], 'edges': ['case_opinion', 'alternate_name', 'mentioned_in', 'Petitioner', 'Respondent', 'advocated_by', 'decided_by', 'won_by', 'majority', 'minority', 'based_in', 'none', 'lived_in', 'religion', 'employee_of', 'works_for', 'parent_of', 'child_of', 'has_shareholder', 'owns', 'sibling_of', 'related_to', 'Appellant', 'Appellee', 'charges', 'origin', 'born_in', 'school_attended', 'has_title', 'part_of', 'website']}
+
+// Longest Paths: ${JSON.stringify(graphStats.longestPaths)}
+//       Node Degree Distribution: ${JSON.stringify(graphStats.nodeDegreeDistribution)}
+
+// - Favor structural and aggregative queries over content-based queries.
+
+// - Allow queries that may explore nodes and edges that don't appear in the current graph, but follow the same schema. 
+
+
+//     IMPORTANT: For EACH question, provide TWO versions of the Cypher query:
+//     1. A standard query without fuzzy matching
+//     2. A query using fuzzy matching for text properties
+
+//     When using fuzzy matching, follow these guidelines:
+//     - Use the apoc.text.fuzzyMatch() function for text properties like names, titles, or descriptions.
+//     - Set an appropriate similarity threshold (between 0 and 1) based on how strict the matching should be.
+//     - Example of fuzzy matching in a query:
+//       MATCH (n:Node)
+//       WHERE apoc.text.fuzzyMatch(n.name, $searchTerm) > 0.7
+//       RETURN n

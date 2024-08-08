@@ -1,4 +1,4 @@
-import { Driver, Record, Result } from 'neo4j-driver'
+import { Driver, Record, Result, type Session } from 'neo4j-driver'
 
 interface GraphStats {
   nodeCounts: { [key: string]: number };
@@ -9,6 +9,7 @@ interface GraphStats {
   schema: string
   // longestPaths: { startType: string; endType: string; pathLength: number; nodeTypes: string[] }[];
   // nodeDegreeDistribution: { nodeType: string; degreeCounts: { [key: number]: number } }[];
+  graphStructure: string
 }
 
 interface DegreeDistribution {
@@ -127,6 +128,46 @@ async function getSchema(driver:Driver): Promise<string> {
 }
 
 
+async function generateGraphStructure(driver: Driver): Promise<string> {
+  const session: Session = driver.session();
+  let structureString = "";
+
+  try {
+    const result = await session.run(`
+      CALL apoc.meta.schema()
+      YIELD value
+      RETURN value
+    `);
+
+    if (result.records.length > 0) {
+      const schema = result.records[0].get('value');
+
+      for (const [nodeType, nodeDetails] of Object.entries(schema)) {
+        const relationships = (nodeDetails as any).relationships;
+        for (const [relType, relDetails] of Object.entries(relationships)) {
+          const direction = (relDetails as any).direction;
+          const targetNodeTypes = (relDetails as any).labels;
+
+          for (const targetNodeType of targetNodeTypes) {
+            if (direction === 'OUT' || direction === 'BOTH') {
+              structureString += `- (${nodeType})-[:${relType}]->(${targetNodeType})\n`;
+            }
+            if (direction === 'IN' || direction === 'BOTH') {
+              structureString += `- (${targetNodeType})-[:${relType}]->(${nodeType})\n`;
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error generating graph structure:', error);
+  } finally {
+    await session.close();
+  }
+
+  return structureString;
+}
+
 // async function getLongestPaths(driver: Driver): Promise<{ startType: string; endType: string; pathLength: number; nodeTypes: string[] }[]> {
 //   const result = await runQuery(driver, `
 //     MATCH path = (start)-[*]->(end)
@@ -179,6 +220,7 @@ async function getGraphStats(driver: Driver): Promise<GraphStats> {
     mostConnectedNodes: await getMostConnectedNodes(driver),
     commonNodeProperties: await getCommonNodeProperties(driver),
     relationshipPatterns: await getRelationshipPatterns(driver),
+    graphStructure: await generateGraphStructure(driver),
     // longestPaths: await getLongestPaths(driver),
     // nodeDegreeDistribution: await getNodeDegreeDistribution(driver)
   };
@@ -195,6 +237,7 @@ function reduceGraphStats(stats: GraphStats): GraphStats {
       properties: item.properties.slice(0, 5)
     })),
     relationshipPatterns: stats.relationshipPatterns.slice(0, 3),
+    graphStructure: stats.graphStructure,
     // longestPaths: stats.longestPaths.slice(0, 2),
     // nodeDegreeDistribution: stats.nodeDegreeDistribution.map(item => ({
     //   nodeType: item.nodeType,
