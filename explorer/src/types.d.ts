@@ -91,6 +91,7 @@ interface CaseDbSchema {
 interface Opinion {
   id: string;
   case_id: int;
+  title: string;
   content: string;
 }
 

@@ -28,6 +28,8 @@ jupyterlab-widgets = "^3.0.11"
 widgetsnbextension = "^4.0.11"
 pyarrow = "^17.0.0"
 fastparquet = "^2024.5.0"
+lowdb = "^0.0.1"
+pymongo = "^4.8.0"
 
 
 [tool.poetry.group.dev.dependencies]

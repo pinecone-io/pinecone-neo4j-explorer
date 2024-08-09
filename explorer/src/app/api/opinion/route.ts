@@ -7,6 +7,7 @@ import fs from 'fs';
 const path = require('path');
 
 const opinionDb = path.resolve(__dirname, '../../../../../../opinions.db.json');
+console.log(opinionDb)
 type OpinionDbInstance = LowSync<OpinionDbSchema>;
 const opinionsAdapter = new JSONFileSync<OpinionDbSchema>(opinionDb);
 const opinionsDb: OpinionDbInstance = new LowSync(opinionsAdapter, { _default: {} });

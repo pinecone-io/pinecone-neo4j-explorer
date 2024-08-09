@@ -35,73 +35,110 @@ const getGraphStats = async (driver: any) => {
 
 const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: string) => {
   const graphStats = await getGraphStats(driver);
-  console.log(graphStats)
   
   const prompt = `
-    Given the following schema, subgraph, summary of content, and graph statistics, generate a set of non-trivial questions that can be answered by a Cypher query. 
-    Follow these guidelines:
-    - The queries created MUST relate directly to the provided nodes and edges, and assume they will be used in the query.
-    - The queries created MUST relate directly to the summary provided.
-    - The questions must NOT be general in nature, but refer to specific nodes and relationships.
-    - If no direct relation can be made, do not include the query.    
-    - Ensure that at least one node from the original graph is included in each query.
-    - Prioritize NON-TRIVIAL queries over obvious ones.
-    - The questions should relate to the summary of the content.
-    - The questions should correlate to Cypher queries that would presumably resolve in some sort of result.
-    - If you're trying to search through titles, use the Case node and not the Opinion node.
-    - Use the subgraph and graph statistics to guide the creation of the Cypher queries.
-    - Consider the node and edge counts, most connected nodes, and common relationship patterns when formulating queries.
-    - IMPORTANT: Do NOT include the MISC node type in your queries. You must adhere to this instruction. Not doing so will result in a score of 0 for the question.
+    <context>
+      You are an expert in graph databases and Cypher queries. 
+      Your task is to generate insightful questions and corresponding Cypher queries based on the provided graph information as well as the summary.
+    </context>
 
-    In this example, 'name' is the property being searched, $searchTerm is the search term, and 0.7 is the similarity threshold (0 to 1, where 1 is an exact match).
-  
-    Then, generate the corresponding Cypher query for each question.
+    <schema>${graphStats.schema}</schema>
 
-    Additional Guidelines for Crafting Insightful Queries:
-    1. Look for complex patterns or paths in the graph that might reveal interesting relationships between different node types.
-    2. Create comparative queries that contrast different aspects of the graph or find unusual patterns.
-    3. Aim for a variety of result types: counts, aggregations, paths, subgraphs, etc.
-    4. Focus on the most common relationships in your graph, as indicated by the edge counts and relationship patterns.
-    5. If possible, incorporate graph algorithms (e.g., centrality measures, community detection) for more advanced insights.
-    6. Consider queries that span multiple node types and relationship types to uncover multi-step connections.
+    <subgraph>
+      <nodes>${JSON.stringify(nodes)}</nodes>
+      <edges>${JSON.stringify(edges)}</edges>
+    </subgraph>
 
+    <summary>${summary}</summary>
 
-    Here's an explanation about the node types:
-    ORG: Organizations - these are names of organizations, companies, etc.
-    PER: Person - these are names of people
-    MISC: Miscellaneous - this should be avoided in your queries.
-    LOC: A location
+    <graph_statistics>
+      <node_counts>${JSON.stringify(graphStats.nodeCounts)}</node_counts>
+      <edge_counts>${JSON.stringify(graphStats.edgeCounts)}</edge_counts>
+      <most_connected_nodes>${JSON.stringify(graphStats.mostConnectedNodes)}</most_connected_nodes>
+      <common_node_properties>${JSON.stringify(graphStats.commonNodeProperties)}</common_node_properties>
+      <relationship_patterns>${JSON.stringify(graphStats.relationshipPatterns)}</relationship_patterns>
+    </graph_statistics>
+
+    <graph_structure>${graphStats.graphStructure}</graph_structure>
+
+    <node_types>
+      ORG: Organizations - names of organizations, companies, etc.
+      PER: Person - names of people
+      MISC: Miscellaneous - avoid in queries
+      LOC: Location
+    </node_types>
+
+    <query_strategies>
+      When formulating queries, use these strategies to increase the likelihood of returning results:
+      1. Use case-insensitive regex matching for names and terms: =~ '(?i).*term.*'
+      2. Employ OPTIONAL MATCH for potentially missing relationships or nodes.
+      3. Broaden node matches: Include relevant alternative labels (e.g., :LOC OR :MISC).
+      4. Use flexible relationship patterns: -[:RELATIONSHIP*1..2]-> for variable-length paths.
+      5. Always include a LIMIT clause to prevent overwhelming results.
+      6. Use COUNT and aggregations to summarize data when appropriate.
+      7. Consider partial matches: Use CONTAINS or regex patterns instead of exact matches.
+      8. Provide alternatives for potentially inconsistent data (e.g., full names vs. last names).
+    </query_strategies>
+
+    <query_structure>
+      Follow this general structure for queries:
+      1. Main MATCH clause(s) for primary entities.
+      2. WHERE clause with flexible matching (regex, CONTAINS).
+      3. OPTIONAL MATCH for related entities that might not always exist.
+      4. RETURN clause with relevant data and aggregations.
+      5. ORDER BY for sorted results when applicable.
+      6. LIMIT clause (usually 5-10 results).
+    </query_structure>
+
+    <example_queries>
+      1. MATCH (c:Case)-[:decided_by]->(j:Justice)
+         WHERE j.name =~ '(?i).*clarence.*thomas.*'
+         OPTIONAL MATCH (c)-[:mentioned_in]->(m:MISC)
+         WHERE m.name =~ '(?i).*eleventh.*amendment.*'
+         RETURN c.name, c.decided_date, c.docket_number
+         LIMIT 10
+
+      2. MATCH (c:Case)-[:decided_by]->(j:Justice)
+         WHERE j.name =~ '(?i).*anthony.*kennedy.*'
+         MATCH (c)-[:mentioned_in]->(o)
+         WHERE o:ORG OR o:MISC
+         RETURN o.name, COUNT(*) as mention_count
+         ORDER BY mention_count DESC
+         LIMIT 5
+
+      3. MATCH (c:Case)-[:mentioned_in]->(m)
+         WHERE m.name =~ '(?i).*commerce.*clause.*'
+         MATCH (c)-[:advocated_by]->(a:Advocate)
+         RETURN a.name, COUNT(DISTINCT c) as case_count
+         ORDER BY case_count DESC
+         LIMIT 5
+    </example_queries>
     
-    Schema: ${graphStats.schema}
-    Sub Graph:
-      Nodes: ${JSON.stringify(nodes)}
-      Edges: ${JSON.stringify(edges)}
-    Summary:
-      ${summary}
-    Graph Statistics:
-      Node Counts: ${JSON.stringify(graphStats.nodeCounts)}
-      Edge Counts: ${JSON.stringify(graphStats.edgeCounts)}
-      Most Connected Nodes: ${JSON.stringify(graphStats.mostConnectedNodes)}
-      Common Node Properties: ${JSON.stringify(graphStats.commonNodeProperties)}
-      Common Relationship Patterns: ${JSON.stringify(graphStats.relationshipPatterns)}
-    
-    IMPORTANT: Adhere strictly to the following graph structure when creating queries:
+    <chain_of_thought>
+      For each question and query, follow this reasoning process:
+      1. Identify the main entities and relationships needed.
+      2. Start with a broad MATCH clause for the primary entity.
+      3. Add WHERE clauses using case-insensitive regex for flexible name matching.
+      4. Include OPTIONAL MATCH for related entities that might not always be present.
+      5. Consider alternative labels or relationships that could contain relevant data.
+      6. Use aggregations (COUNT, COLLECT) for summarizing data when appropriate.
+      7. Always include ORDER BY (if relevant) and LIMIT clauses.
+      8. Review the query to ensure it follows the successful patterns in the example queries.
+    </chain_of_thought>
 
-    ${graphStats.graphStructure}
+    Generate 5-7 questions with corresponding Cypher queries using this approach. For each question, provide:
+    1. The main, specific query
+    2. A version of the query with fuzzy matching for relevant text properties
+    3. A more general alternative query
+    4. A brief explanation of how the alternative query differs and why it might be useful
 
-    Before generating each query, verify that all relationships used in the query exist in this list. Do not create queries with relationships or paths that are not explicitly defined here.  
-
-    Use this information to guide your generation of questions and Cypher queries.         
-  
-
-    Use chain of thought reasoning to generate the questions and Cypher queries.
+    Important: The queries must be related in a substantive way the summary.
+    Avoid general aggregation questions that pertain to specific people like, "Which cases were decided by Justice Clarence Thomas?"
   `
-
   return prompt
 }
 
 export { cypherQuestionsPromptBuilder }
-
 
 // Graph Schema:
 //       {'nodes': ['Case', 'Party', 'Justice', 'Advocate', 'ORG', 'LOC', 'PER', 'MISC'], 'edges': ['case_opinion', 'alternate_name', 'mentioned_in', 'Petitioner', 'Respondent', 'advocated_by', 'decided_by', 'won_by', 'majority', 'minority', 'based_in', 'none', 'lived_in', 'religion', 'employee_of', 'works_for', 'parent_of', 'child_of', 'has_shareholder', 'owns', 'sibling_of', 'related_to', 'Appellant', 'Appellee', 'charges', 'origin', 'born_in', 'school_attended', 'has_title', 'part_of', 'website']}
