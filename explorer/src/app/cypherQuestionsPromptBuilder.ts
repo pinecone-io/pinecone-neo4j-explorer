@@ -1,15 +1,5 @@
-import OpenAI from 'openai'
-import {
-  encode,
-  decode,  
-} from 'gpt-tokenizer'
 import neo4j from 'neo4j-driver';
 import { getReducedGraphStats } from './graphStatsQueries';
-
-const openai = new OpenAI({
-  apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
-});
-
 
 const { NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD } = process.env;
 
@@ -22,7 +12,6 @@ const driver = neo4j.driver(
   neo4j.auth.basic(NEO4J_USERNAME!, NEO4J_PASSWORD!)
 );
 
-const session = driver.session();
 
 let cachedGraphStats: any = null;
 

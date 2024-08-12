@@ -43,7 +43,6 @@ const Graph = () => {
   useEffect(() => {
     const getInferredData = async () => {
       setInferredData(null)
-      console.log(`infer ${summary}`)
       const result = await infer({nodes: graphData.data.nodes, edges: graphData.data.links, summary})
       const object = result?.object;
       

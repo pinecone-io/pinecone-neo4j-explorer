@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import neo4j from 'neo4j-driver';
 
+export const maxDuration = 900
+
 const { NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD } = process.env;
 
 if (!NEO4J_URI || !NEO4J_USERNAME || !NEO4J_PASSWORD) {
@@ -10,7 +12,7 @@ if (!NEO4J_URI || !NEO4J_USERNAME || !NEO4J_PASSWORD) {
 export async function POST(req: NextRequest) {
   const { selectedNodes } = await req.json();
   // console.log("NEO4J_URI", NEO4J_URI)
-  const uniqueSelectNodes = Array.from(new Set(selectedNodes));
+  const uniqueSelectNodes = Array.from(new Set(selectedNodes.map(String)));
   const driver = neo4j.driver(
     NEO4J_URI!,
     neo4j.auth.basic(NEO4J_USERNAME!, NEO4J_PASSWORD!)

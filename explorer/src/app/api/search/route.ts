@@ -4,8 +4,9 @@ import neo4j from 'neo4j-driver';
 import OpenAI from 'openai';
 import { summarizeOpinions } from '@/app/summarize';
 import type { MatchMetadata, Case, Opinion } from '@/types';
-
 import { MongoClient } from 'mongodb';
+
+export const maxDuration = 900
 
 const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_HOST, MONGODB_DATABASE } = process.env;
 

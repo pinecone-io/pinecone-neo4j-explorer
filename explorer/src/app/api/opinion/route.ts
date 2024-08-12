@@ -13,14 +13,6 @@ const opinionsAdapter = new JSONFileSync<OpinionDbSchema>(opinionDb);
 const opinionsDb: OpinionDbInstance = new LowSync(opinionsAdapter, { _default: {} });
 
 
-// fs.readFile(opinionDb, 'utf8', (err, data) => {
-//   if (err) {
-//     console.error('Error reading file:', err);
-//     return;
-//   }
-//   console.log('File length:', data.length);
-// });
-
 opinionsDb.read();
 
 
