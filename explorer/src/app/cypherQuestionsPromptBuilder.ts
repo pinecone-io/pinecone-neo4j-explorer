@@ -60,14 +60,15 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
 
     <query_strategies>
       When formulating queries, use these strategies to increase the likelihood of returning results:
-      1. Use case-insensitive regex matching for names and terms: =~ '(?i).*term.*'
+      1. Any query must follow the <relationship_patterns> provided. Do NOT generate queries that don't follow the patterns.      
       2. Employ OPTIONAL MATCH for potentially missing relationships or nodes.
-      3. Broaden node matches: Include relevant alternative labels (e.g., :LOC OR :MISC).
-      4. Use flexible relationship patterns: -[:RELATIONSHIP*1..2]-> for variable-length paths.
-      5. Always include a LIMIT clause to prevent overwhelming results.
-      6. Use COUNT and aggregations to summarize data when appropriate.
-      7. Consider partial matches: Use CONTAINS or regex patterns instead of exact matches.
-      8. Provide alternatives for potentially inconsistent data (e.g., full names vs. last names).
+      3. Broaden node matches: Include relevant alternative labels
+      4. ALWAYS use case-insensitive regex matching for name properties and terms: =~ '(?i).*term.*'
+      5. Use flexible relationship patterns: -[:RELATIONSHIP*1..2]-> for variable-length paths.
+      6. Always include a LIMIT clause to prevent overwhelming results.
+      7. Use COUNT and aggregations to summarize data when appropriate.
+      8. Consider partial matches: Use CONTAINS or regex patterns instead of exact matches.
+      9. Provide alternatives for potentially inconsistent data (e.g., full names vs. last names).
     </query_strategies>
 
     <query_structure>
@@ -98,8 +99,10 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
 
     1. Basic pattern matching with multiple node types:
     MATCH (c:Case)
+    WHERE c.name =~ '(?i).*case.*'
     OPTIONAL MATCH (c)-[:decided_by]->(j:Justice)
     OPTIONAL MATCH (c)-[:considers_policy]->(p:PolicyArea)
+    WHERE j.name =~ '(?i).*justice.*' AND p.name =~ '(?i).*policy.*'
     RETURN c.name AS case_name, j.name AS justice, p.name AS policy_area
     LIMIT 5
 
@@ -107,30 +110,32 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
     MATCH (e:Entity)
     WHERE e.name =~ '(?i).*constitutional.*'
     OPTIONAL MATCH (e)<-[:mentions]-(c:Case)
+    WHERE c.name =~ '(?i).*case.*'
     RETURN e.name AS entity, COUNT(c) AS mention_count
     ORDER BY mention_count DESC
     LIMIT 5
 
     3. Path finding with variable length relationships:
     MATCH path = (c1:Case)-[:cites*1..3]->(c2:Case)
-    WHERE c1.name =~ '(?i).*landmark.*'
+    WHERE c1.name =~ '(?i).*landmark.*' AND c2.name =~ '(?i).*case.*'
     RETURN c1.name AS source_case, c2.name AS cited_case, 
           [r IN relationships(path) | type(r)] AS citation_chain
     LIMIT 5
 
     4. Combining multiple patterns with UNION:
     MATCH (c:Case)-[:ruled_on]->(i:Issue)
-    WHERE i.name =~ '(?i).*privacy.*'
+    WHERE i.name =~ '(?i).*privacy.*' AND c.name =~ '(?i).*case.*'
     RETURN c.name AS case_name, 'Privacy' AS category
     LIMIT 5
     UNION
     MATCH (c:Case)-[:considers_policy]->(p:PolicyArea)
-    WHERE p.name =~ '(?i).*technology.*'
+    WHERE p.name =~ '(?i).*technology.*' AND c.name =~ '(?i).*case.*'
     RETURN c.name AS case_name, 'Technology' AS category
     LIMIT 5
 
     5. Using CASE statements for data categorization:
     MATCH (c:Case)-[:decided_by]->(j:Justice)
+    WHERE c.name =~ '(?i).*case.*' AND j.name =~ '(?i).*justice.*'
     RETURN j.name AS justice,
           COUNT(c) AS total_cases,
           CASE 

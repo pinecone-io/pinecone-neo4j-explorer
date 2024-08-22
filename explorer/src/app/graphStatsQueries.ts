@@ -86,7 +86,6 @@ async function getRelationshipPatterns(driver: Driver): Promise<{ pattern: strin
     WITH labels(a)[0] + '-[' + type(r) + ']->' + labels(b)[0] AS pattern, count(*) AS count
     RETURN pattern, count
     ORDER BY count DESC
-    LIMIT 5
   `);
   return result.records.map(record => ({
     pattern: record.get('pattern'),
@@ -143,18 +142,24 @@ async function generateGraphStructure(driver: Driver): Promise<string> {
     if (result.records.length > 0) {
       const schema = result.records[0].get('value');
 
-      for (const [nodeType, nodeDetails] of Object.entries(schema)) {
-        const relationships = (nodeDetails as any).relationships;
-        for (const [relType, relDetails] of Object.entries(relationships)) {
-          const direction = (relDetails as any).direction;
-          const targetNodeTypes = (relDetails as any).labels;
+      if (schema && typeof schema === 'object') {
+        for (const [nodeType, nodeDetails] of Object.entries(schema)) {
+          const relationships = (nodeDetails as any).relationships;
+          if (relationships && typeof relationships === 'object') {
+            for (const [relType, relDetails] of Object.entries(relationships)) {
+              const direction = (relDetails as any).direction;
+              const targetNodeTypes = (relDetails as any).labels;
 
-          for (const targetNodeType of targetNodeTypes) {
-            if (direction === 'OUT' || direction === 'BOTH') {
-              structureString += `- (${nodeType})-[:${relType}]->(${targetNodeType})\n`;
-            }
-            if (direction === 'IN' || direction === 'BOTH') {
-              structureString += `- (${targetNodeType})-[:${relType}]->(${nodeType})\n`;
+              if (Array.isArray(targetNodeTypes)) {
+                for (const targetNodeType of targetNodeTypes) {
+                  if (direction === 'OUT' || direction === 'BOTH') {
+                    structureString += `- (${nodeType})-[:${relType}]->(${targetNodeType})\n`;
+                  }
+                  if (direction === 'IN' || direction === 'BOTH') {
+                    structureString += `- (${targetNodeType})-[:${relType}]->(${nodeType})\n`;
+                  }
+                }
+              }
             }
           }
         }
@@ -166,7 +171,7 @@ async function generateGraphStructure(driver: Driver): Promise<string> {
     await session.close();
   }
 
-  return structureString;
+  return structureString || "No graph structure found.";
 }
 
 // async function getLongestPaths(driver: Driver): Promise<{ startType: string; endType: string; pathLength: number; nodeTypes: string[] }[]> {
@@ -250,6 +255,7 @@ async function getGraphStats(driver: Driver): Promise<GraphStats> {
 }
 
 function reduceGraphStats(stats: GraphStats): GraphStats {
+  console.log("PATTERNS", stats.relationshipPatterns)
   return {
     schema: stats.schema,
     nodeCounts: stats.nodeCounts,
