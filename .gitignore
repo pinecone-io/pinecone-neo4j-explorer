@@ -1,4 +1,4 @@
-.env
+.env*
 node_modules/
 enron-explorer/.env
 enron-explorer/node_modules
