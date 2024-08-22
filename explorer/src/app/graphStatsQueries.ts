@@ -10,6 +10,8 @@ interface GraphStats {
   // longestPaths: { startType: string; endType: string; pathLength: number; nodeTypes: string[] }[];
   // nodeDegreeDistribution: { nodeType: string; degreeCounts: { [key: number]: number } }[];
   graphStructure: string
+  edgeTypes: string[]
+  nodeTypes: string[]
 }
 
 interface DegreeDistribution {
@@ -127,7 +129,6 @@ async function getSchema(driver:Driver): Promise<string> {
   return result.records[0].get('schema')
 }
 
-
 async function generateGraphStructure(driver: Driver): Promise<string> {
   const session: Session = driver.session();
   let structureString = "";
@@ -212,6 +213,26 @@ async function getNodeDegreeDistribution(driver: Driver): Promise<DegreeDistribu
   }));
 }
 
+async function getEdgeTypes(driver: Driver): Promise<string[]> {
+  const result = await runQuery(driver, `
+    MATCH ()-[r]->()
+    RETURN type(r) AS edgeType, count(*) AS count
+    ORDER BY count DESC
+    LIMIT 5
+  `);
+  return result.records.map(record => record.get('edgeType'))
+}
+
+async function getNodeTypes(driver: Driver): Promise<string[]> {
+  const result = await runQuery(driver, `
+    MATCH (n)
+    RETURN labels(n) AS nodeType, count(*) AS count
+    ORDER BY count DESC
+    LIMIT 5
+  `);
+  return result.records.map(record => record.get('nodeType'))
+}
+
 async function getGraphStats(driver: Driver): Promise<GraphStats> {
   return {
     schema: await getSchema(driver),
@@ -223,6 +244,8 @@ async function getGraphStats(driver: Driver): Promise<GraphStats> {
     graphStructure: await generateGraphStructure(driver),
     // longestPaths: await getLongestPaths(driver),
     // nodeDegreeDistribution: await getNodeDegreeDistribution(driver)
+    edgeTypes: await getEdgeTypes(driver),
+    nodeTypes: await getNodeTypes(driver)
   };
 }
 
@@ -238,6 +261,8 @@ function reduceGraphStats(stats: GraphStats): GraphStats {
     })),
     relationshipPatterns: stats.relationshipPatterns.slice(0, 3),
     graphStructure: stats.graphStructure,
+    edgeTypes: stats.edgeTypes,
+    nodeTypes: stats.nodeTypes,
     // longestPaths: stats.longestPaths.slice(0, 2),
     // nodeDegreeDistribution: stats.nodeDegreeDistribution.map(item => ({
     //   nodeType: item.nodeType,
@@ -249,7 +274,6 @@ function reduceGraphStats(stats: GraphStats): GraphStats {
     // }))
   };
 }
-
 export async function getReducedGraphStats(driver: Driver): Promise<GraphStats> {
   const stats = await getGraphStats(driver)
   return reduceGraphStats(stats)

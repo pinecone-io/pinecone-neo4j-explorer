@@ -51,11 +51,12 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
     <graph_structure>${graphStats.graphStructure}</graph_structure>
 
     <node_types>
-      ORG: Organizations - names of organizations, companies, etc.
-      PER: Person - names of people
-      MISC: Miscellaneous - avoid in queries
-      LOC: Location
+      ${graphStats.nodeTypes.map((nodeType: string) => `<nodeType>${nodeType}</nodeType>`).join('')}
     </node_types>
+
+    <edge_types>
+      ${graphStats.edgeTypes.map((edgeType: string) => `<edgeType>${edgeType}</edgeType>`).join('')}
+    </edge_types>
 
     <query_strategies>
       When formulating queries, use these strategies to increase the likelihood of returning results:
@@ -79,29 +80,71 @@ const cypherQuestionsPromptBuilder = async (nodes: any, edges: any, summary: str
       6. LIMIT clause (usually 5-10 results).
     </query_structure>
 
-    <example_queries>
-      1. MATCH (c:Case)-[:decided_by]->(j:Justice)
-         WHERE j.name =~ '(?i).*clarence.*thomas.*'
-         OPTIONAL MATCH (c)-[:mentioned_in]->(m:MISC)
-         WHERE m.name =~ '(?i).*eleventh.*amendment.*'
-         RETURN c.name, c.decided_date, c.docket_number
-         LIMIT 10
+    
 
-      2. MATCH (c:Case)-[:decided_by]->(j:Justice)
-         WHERE j.name =~ '(?i).*anthony.*kennedy.*'
-         MATCH (c)-[:mentioned_in]->(o)
-         WHERE o:ORG OR o:MISC
-         RETURN o.name, COUNT(*) as mention_count
-         ORDER BY mention_count DESC
-         LIMIT 5
+    <cypher_guidelines_and_examples>
 
-      3. MATCH (c:Case)-[:mentioned_in]->(m)
-         WHERE m.name =~ '(?i).*commerce.*clause.*'
-         MATCH (c)-[:advocated_by]->(a:Advocate)
-         RETURN a.name, COUNT(DISTINCT c) as case_count
-         ORDER BY case_count DESC
-         LIMIT 5
-    </example_queries>
+    Guidelines for Effective Cypher Queries:
+
+    1. Explore diverse node and relationship types.
+    2. Use flexible matching with case-insensitive regex patterns.
+    3. Employ OPTIONAL MATCH for potentially missing relationships.
+    4. Structure queries logically: MATCH, WHERE, OPTIONAL MATCH, RETURN, ORDER BY, LIMIT.
+    5. Utilize advanced techniques like path finding, CASE statements, UNION, and subqueries when appropriate.
+    6. Prioritize query performance and clarity.
+    7. Adapt queries to specific questions, being prepared to try alternative approaches.
+
+    General Example Queries:
+
+    1. Basic pattern matching with multiple node types:
+    MATCH (c:Case)
+    OPTIONAL MATCH (c)-[:decided_by]->(j:Justice)
+    OPTIONAL MATCH (c)-[:considers_policy]->(p:PolicyArea)
+    RETURN c.name AS case_name, j.name AS justice, p.name AS policy_area
+    LIMIT 5
+
+    2. Flexible text matching and aggregation:
+    MATCH (e:Entity)
+    WHERE e.name =~ '(?i).*constitutional.*'
+    OPTIONAL MATCH (e)<-[:mentions]-(c:Case)
+    RETURN e.name AS entity, COUNT(c) AS mention_count
+    ORDER BY mention_count DESC
+    LIMIT 5
+
+    3. Path finding with variable length relationships:
+    MATCH path = (c1:Case)-[:cites*1..3]->(c2:Case)
+    WHERE c1.name =~ '(?i).*landmark.*'
+    RETURN c1.name AS source_case, c2.name AS cited_case, 
+          [r IN relationships(path) | type(r)] AS citation_chain
+    LIMIT 5
+
+    4. Combining multiple patterns with UNION:
+    MATCH (c:Case)-[:ruled_on]->(i:Issue)
+    WHERE i.name =~ '(?i).*privacy.*'
+    RETURN c.name AS case_name, 'Privacy' AS category
+    LIMIT 5
+    UNION
+    MATCH (c:Case)-[:considers_policy]->(p:PolicyArea)
+    WHERE p.name =~ '(?i).*technology.*'
+    RETURN c.name AS case_name, 'Technology' AS category
+    LIMIT 5
+
+    5. Using CASE statements for data categorization:
+    MATCH (c:Case)-[:decided_by]->(j:Justice)
+    RETURN j.name AS justice,
+          COUNT(c) AS total_cases,
+          CASE 
+            WHEN COUNT(c) > 100 THEN 'Prolific'
+            WHEN COUNT(c) > 50 THEN 'Active'
+            ELSE 'Moderate'
+          END AS activity_level
+    ORDER BY total_cases DESC
+    LIMIT 5
+
+    Remember to adapt these patterns to the specific questions at hand, exploring various aspects of the legal database without overemphasizing any particular node type or relationship.
+
+    </cypher_guidelines_and_examples>
+
     
     <chain_of_thought>
       For each question and query, follow this reasoning process:
