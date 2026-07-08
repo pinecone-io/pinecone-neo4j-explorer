@@ -36,7 +36,6 @@
     "react-markdown": "^9.0.1",
     "three": "^0.165.0",
     "three-spritetext": "^1.8.2",
-    "vercel": "^35.2.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

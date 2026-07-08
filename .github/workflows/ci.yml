@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref (e.g. rapid pushes to a PR).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint & build (explorer)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: explorer
+
+    # The API routes validate these at module load, so `next build` needs them
+    # set. These are dummy, non-secret placeholders that satisfy the presence
+    # checks without connecting to anything — the build makes no network calls.
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEO4J_URI: bolt://localhost:7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: dummy
+      MONGODB_USERNAME: dummy
+      MONGODB_PASSWORD: dummy
+      MONGODB_HOST: localhost
+      MONGODB_DATABASE: dummy
+      OPENAI_API_KEY: sk-dummy
+      PINECONE_API_KEY: dummy-key
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: explorer/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
