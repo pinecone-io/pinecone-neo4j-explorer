@@ -1,0 +1,25 @@
+version: 2
+updates:
+  # JS dependencies for the Next.js explorer app (pnpm).
+  - package-ecosystem: npm
+    directory: /explorer
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    # Group low-risk updates into a single PR to avoid a flood of one-off PRs.
+    # Majors are excluded from the group so they come as individual, reviewable PRs.
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions used by the CI workflow.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"

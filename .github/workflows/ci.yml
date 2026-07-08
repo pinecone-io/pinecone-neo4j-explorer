@@ -36,13 +36,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Version comes from the "packageManager" field in explorer/package.json.
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          package_json_file: explorer/package.json
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
           cache-dependency-path: explorer/pnpm-lock.yaml
 
