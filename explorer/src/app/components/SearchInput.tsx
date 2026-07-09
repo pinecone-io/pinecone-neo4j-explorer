@@ -1,4 +1,3 @@
-import { Button, Input, Spinner } from "@material-tailwind/react"
 import { useAppContext } from "../AppContext"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
@@ -48,27 +47,25 @@ export const SearchInput = () => {
   
   return (
     <>
-        <Input
+        <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search..."
-          className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:shadow-md"
-          labelProps={{
-            className: "hidden",
-          }}
-          containerProps={{ className: "min-w-[200px]" }} crossOrigin={undefined}/>
-        <Button 
-          onClick={handleSearch} 
-          className="bg-blue-500 text-white shadow-md flex items-center justify-center min-w-[100px] h-[35px] mt-1 ml-5"
+          className="min-w-[200px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-lg shadow-gray-900/5 placeholder:text-gray-500 focus:border-gray-400 focus:shadow-md focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="bg-blue-500 text-white shadow-md flex items-center justify-center min-w-[100px] h-[35px] mt-1 ml-5 rounded-md disabled:opacity-70"
           disabled={isLoading}
         >
           {isLoading ? (
-            <Spinner className="h-3 w-5 text-white" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
             "Search"
           )}
-        </Button>
+        </button>
       </>
   )
 }
