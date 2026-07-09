@@ -5,8 +5,6 @@ import { Search } from "./Search";
 import { CypherResults } from "@/components/CypherResults";
 import { Questions } from "@/components/Questions";
 import { useAppContext } from "../AppContext";
-import { Button } from "@material-tailwind/react";
-import { IconButton } from "@material-tailwind/react";
 import { PiGraphBold } from "react-icons/pi";
 import { BsFileText } from "react-icons/bs";
 import { SearchInput } from "./SearchInput";
@@ -24,10 +22,13 @@ export default function Home() {
             <Image src="/pinecone.svg" width={140} height={140} className="mr-2" alt="logo"></Image> <div className="text-2xl mt-2">Graph Explorer</div>
           </div>
           <div className="flex ml-auto mr-3">
-            <IconButton variant="outlined" className="rounded-full" onClick={() => setIsFlipped(!isFlipped)} >              
-              {isFlipped ? <BsFileText /> : <PiGraphBold />            
-            }
-            </IconButton>
+            <button
+              type="button"
+              onClick={() => setIsFlipped(!isFlipped)}
+              className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-900 text-gray-900 transition-colors hover:bg-gray-900/10 active:bg-gray-900/20"
+            >
+              {isFlipped ? <BsFileText /> : <PiGraphBold />}
+            </button>
           </div>
         </div>
         <div className="flex justify-center p-4 bg-gray-100 pt-5">

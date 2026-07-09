@@ -113,7 +113,7 @@ const Graph = () => {
     }
   }
 
-  const fgRef = useRef();
+  const fgRef = useRef<any>(undefined);
 
   if (isLoading) return 'Loading...';
   if (error) return `An error has occurred: ${error.message}`;

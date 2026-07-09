@@ -1,5 +1,13 @@
 # pnpm 11 reads project settings from here (not package.json's "pnpm" field).
 #
+# sharp is Next 16's image-optimization engine and legitimately needs its
+# native binary built on install.
+onlyBuiltDependencies:
+  - sharp
+# Skip pnpm's pre-run dependency verification, which can otherwise abort
+# `pnpm run <script>` on machines with strict build-script policies.
+verifyDepsBeforeRun: false
+#
 # Security overrides for vulnerable, mostly-transitive dependencies. Each entry
 # is scoped to the vulnerable version range so unrelated majors already in the
 # tree are left untouched. The `next` (14 -> 16) and `ai` (3 -> 5) major upgrades

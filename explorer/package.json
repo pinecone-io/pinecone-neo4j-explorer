@@ -7,13 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "dependencies": {
     "3d-force-graph": "^1.73.3",
     "@ai-sdk/openai": "^0.0.40",
     "@fontsource/roboto": "^5.0.14",
-    "@material-tailwind/react": "^2.1.9",
     "@pinecone-database/pinecone": "^2.2.2",
     "@tanstack/react-query": "^5.48.0",
     "@types/lowdb": "^1.0.15",
@@ -26,10 +26,10 @@
     "lowdb": "^7.0.1",
     "mongodb": "^6.8.0",
     "neo4j-driver": "^5.21.0",
-    "next": "14.2.4",
+    "next": "^16.2.10",
     "openai": "^4.52.1",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "react-force-graph-2d": "^1.25.5",
     "react-force-graph-3d": "^1.24.3",
     "react-icons": "^5.2.1",
@@ -40,15 +40,22 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20",
-    "@types/react": "18.2.42",
-    "@types/react-dom": "^18",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@types/three": "^0.165.0",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.4",
+    "@vitejs/plugin-react": "^6.0.3",
+    "eslint": "^9",
+    "eslint-config-next": "^16.2.10",
+    "jsdom": "^29.1.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

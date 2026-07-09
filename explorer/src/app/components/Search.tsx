@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown'
-import { Card, Typography } from "@material-tailwind/react";
 import { useAppContext } from '../AppContext';
 import { isEqual } from 'lodash';
 
@@ -24,7 +23,7 @@ const Search = () => {
     isFlipped
   } = useAppContext();
 
-  const prevDataRef = useRef();
+  const prevDataRef = useRef<any>(undefined);
 
   const [opinion, setOpinion] = useState<string | undefined>('');
 
@@ -60,12 +59,12 @@ const Search = () => {
       {queryResult && summary && (
         <div className="mt-2 flex-1 overflow-hidden">
           <div className="h-[90vh] overflow-y-auto">
-            <Card className="p-4 mb-2">
-              <Typography variant="h6" color="blue-gray" className="mb-2 border-b border-gray-300">
+            <div className="rounded-xl bg-white shadow-md p-4 mb-2">
+              <h6 className="text-base font-semibold text-gray-800 mb-2 border-b border-gray-300">
                 {isFlipped ? "Opinion" : "Summary"}
-              </Typography>
+              </h6>
               <Markdown>{isFlipped ? opinion : summary}</Markdown>
-            </Card>
+            </div>
           </div>
         </div>
       )}
