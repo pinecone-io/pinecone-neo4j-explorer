@@ -10,6 +10,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default for GITHUB_TOKEN: both jobs only read the repo (no
+# deploy, no writes back). Widen per-job if a future job needs more.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Lint & build (explorer)
