@@ -7,3 +7,5 @@ enron-explorer/node_modules
 .venv/
 *.csv
 *.db.json
+__pycache__/
+*.pyc

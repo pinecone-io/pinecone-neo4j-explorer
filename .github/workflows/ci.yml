@@ -10,6 +10,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default for GITHUB_TOKEN: both jobs only read the repo (no
+# deploy, no writes back). Widen per-job if a future job needs more.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Lint & build (explorer)
@@ -63,3 +68,34 @@ jobs:
 
       - name: Build
         run: pnpm run build
+
+  python:
+    name: Lint & smoke-check (python)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      # Full install (not just ruff) so a bad dependency bump that fails to
+      # resolve/install is caught here — this lane is the safety net for the
+      # Python dependency work. --no-root: the repo is a script collection, not
+      # an installable package.
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Lint
+        run: poetry run ruff check .
+
+      # The data scripts run service connections at module load (and import
+      # optional-at-runtime deps), so importing them isn't safe in CI. Byte-
+      # compilation catches syntax/AST breakage — e.g. from a dependency bump —
+      # without executing anything.
+      - name: Compile smoke check
+        run: poetry run python -m compileall process.py process_scotus.py
