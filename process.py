@@ -7,7 +7,7 @@ from neo4j import GraphDatabase
 import textwrap
 from pinecone import Pinecone
 from openai import OpenAI
-from dotenv import load_dotenv, find_dotenv
+from dotenv import find_dotenv
 
 
 # Read the first 10 rows of "emails.csv"

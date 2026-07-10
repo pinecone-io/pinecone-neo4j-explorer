@@ -34,7 +34,14 @@ pymongo = "^4.8.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.4"
+ruff = "^0.15.21"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+# Match the project's supported interpreter (see [tool.poetry.dependencies] python).
+target-version = "py311"
+# Default rule set (pyflakes F + a subset of pycodestyle E). Intentionally lean:
+# this lane is a dependency safety net, not a style overhaul of the data scripts.

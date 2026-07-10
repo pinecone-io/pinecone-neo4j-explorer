@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 import textwrap
 from openai import OpenAI
-import os
 from pinecone import Pinecone
 import re
 from datetime import datetime
