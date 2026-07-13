@@ -48,8 +48,8 @@ importers:
         specifier: ^5.48.0
         version: 5.51.21(react@19.2.7)
       '@types/lowdb':
-        specifier: ^1.0.15
-        version: 1.0.15
+        specifier: ^2.0.3
+        version: 2.0.3
       '@uidotdev/usehooks':
         specifier: ^2.4.1
         version: 2.4.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -957,8 +957,9 @@ packages:
   '@types/lodash@4.17.7':
     resolution: {integrity: sha512-8wTvZawATi/lsmNu10/j2hk1KEP0IvjubqPE3cu1Xz7xfXXt5oCq3SNUz4fMIP4XGF9Ky+Ue2tBA3hcS7LSBlA==}
 
-  '@types/lowdb@1.0.15':
-    resolution: {integrity: sha512-xaMNIveDCryK4UvnUJOc2BCOH0lPivdvWHrutsLryo9r9Id3RqZq2RDmT4eddiEPYzu7nJMw6nFIcVifcqjWqg==}
+  '@types/lowdb@2.0.3':
+    resolution: {integrity: sha512-YZUXD9jLt2aLsi0FIeL490JQ3r//Osp9OZYJLTbhRk2cJjrrtFmD0DvZ+GeFOjMlVB6l8AWT2/80ufJR94dQBA==}
+    deprecated: This is a stub types definition. lowdb provides its own type definitions, so you do not need this installed.
 
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
@@ -4555,9 +4556,9 @@ snapshots:
 
   '@types/lodash@4.17.7': {}
 
-  '@types/lowdb@1.0.15':
+  '@types/lowdb@2.0.3':
     dependencies:
-      '@types/lodash': 4.17.7
+      lowdb: 7.0.1
 
   '@types/mdast@4.0.4':
     dependencies:
