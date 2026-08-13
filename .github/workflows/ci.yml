@@ -69,6 +69,17 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Dependency audit (fail on high or critical)
+        run: |
+          pnpm audit --json > pnpm-audit.json || true
+          COUNT=$(node -e "const v=require('./pnpm-audit.json').metadata.vulnerabilities;console.log((v.high||0)+(v.critical||0))")
+          echo "high+critical vulnerabilities: $COUNT"
+          if [ "$COUNT" -gt 0 ]; then
+            echo "::error::High or critical dependency vulnerabilities found"
+            pnpm audit --audit-level=high || true
+            exit 1
+          fi
+
   python:
     name: Lint & smoke-check (python)
     runs-on: ubuntu-latest

@@ -14,6 +14,18 @@ updates:
           - minor
           - patch
 
+  # Python dependencies for the data scripts (poetry).
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
   # GitHub Actions used by the CI workflow.
   - package-ecosystem: github-actions
     directory: /
