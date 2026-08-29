@@ -62,9 +62,6 @@ importers:
       d3-force-3d:
         specifier: ^3.0.5
         version: 3.0.5
-      gpt-3-encoder:
-        specifier: ^1.1.4
-        version: 1.1.4
       gpt-tokenizer:
         specifier: ^2.1.2
         version: 2.2.1
@@ -1805,6 +1802,7 @@ packages:
   eslint@9.39.4:
     resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -1995,9 +1993,6 @@ packages:
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
-
-  gpt-3-encoder@1.1.4:
-    resolution: {integrity: sha512-fSQRePV+HUAhCn7+7HL7lNIXNm6eaFWFbNLOOGtmSJ0qJycyQvj60OvRlH7mee8xAMjBDNRdMXlMwjAbMTDjkg==}
 
   gpt-tokenizer@2.2.1:
     resolution: {integrity: sha512-JYvLWTpPtFGz7eS7uixHslv3L96zka0n18MlQeH5YVl5F6mNhssxzSBTeqwNfW8A0AQIMYEaOfbSr+MaoCUvpg==}
@@ -5643,8 +5638,6 @@ snapshots:
       gopd: 1.2.0
 
   gopd@1.2.0: {}
-
-  gpt-3-encoder@1.1.4: {}
 
   gpt-tokenizer@2.2.1:
     dependencies:
