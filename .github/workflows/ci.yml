@@ -104,6 +104,9 @@ jobs:
       - name: Lint
         run: poetry run ruff check .
 
+      - name: Format check
+        run: poetry run ruff format --check .
+
       # The data scripts run service connections at module load (and import
       # optional-at-runtime deps), so importing them isn't safe in CI. Byte-
       # compilation catches syntax/AST breakage — e.g. from a dependency bump —
