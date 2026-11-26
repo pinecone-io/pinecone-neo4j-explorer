@@ -1,8 +1,10 @@
 [tool.poetry]
 name = "pinecone-neo4j"
 version = "0.1.0"
-description = ""
+description = "Demo integrating Pinecone with Neo4j to analyze and explore Supreme Court cases."
 authors = ["Roie Schwaber-Cohen <roie.cohen@gmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/pinecone-io/pinecone-neo4j-explorer"
 readme = "README.md"
 
 [tool.poetry.dependencies]
